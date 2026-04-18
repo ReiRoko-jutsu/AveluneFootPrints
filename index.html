@@ -42,7 +42,7 @@
         .logo { font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
         
         .btn {
-            display: inline-flex; align-items: center; justify-content: center;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             padding: 14px 32px; border-radius: 50px; font-weight: 700; text-decoration: none;
             transition: var(--transition); border: none; cursor: pointer; font-size: 1rem;
         }
@@ -66,6 +66,59 @@
         .hero p { font-size: 1.25rem; color: var(--text-dim); max-width: 600px; margin-bottom: 40px; line-height: 1.6; }
         
         .hero-buttons { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+        /* --- TUTORIAL SECTION --- */
+        .tutorial-section { padding: 60px 0 120px 0; text-align: center; }
+        .tutorial-card {
+            background: var(--panel); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px;
+            max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center;
+        }
+        .tutorial-card h3 { font-size: 1.8rem; margin-bottom: 15px; color: white; }
+        .tutorial-card p { color: var(--text-dim); margin-bottom: 30px; max-width: 500px; line-height: 1.6; }
+        .play-btn {
+            width: 80px; height: 80px; background: var(--accent); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5rem;
+            cursor: pointer; transition: var(--transition); box-shadow: 0 10px 30px var(--accent-glow);
+            margin-bottom: 20px; border: none;
+        }
+        .play-btn:hover { transform: scale(1.1); background: white; color: var(--accent); }
+
+        /* --- VIDEO MODAL --- */
+        .video-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .video-modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .video-container {
+            width: 90%; max-width: 1000px; aspect-ratio: 16/9;
+            background: #000; border-radius: 16px; overflow: hidden; position: relative;
+            border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .video-modal-overlay.active .video-container { transform: scale(1); }
+        
+        .close-video-btn {
+            position: absolute; top: -40px; right: 0; background: none; border: none;
+            color: white; font-size: 1.5rem; cursor: pointer; transition: 0.2s;
+        }
+        .close-video-btn:hover { color: var(--accent); }
+        
+        /* YouTube iframe fix */
+        .video-container iframe {
+            width: 100%; height: 100%; border: none; display: block;
+        }
+
+        .video-fallback {
+            margin-top: 20px; font-size: 0.9rem; color: var(--text-dim);
+            transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .video-modal-overlay.active .video-fallback { transform: scale(1); }
+        .video-fallback a { color: var(--secondary); text-decoration: none; font-weight: 600; }
+        .video-fallback a:hover { text-decoration: underline; }
 
         /* --- INTRODUCTION SECTION --- */
         .intro-section { padding: 120px 0; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); }
@@ -120,10 +173,28 @@
             .hero h1 { font-size: 3.5rem; }
             .hero-buttons { flex-direction: column; width: 100%; padding: 0 20px; }
             .btn { width: 100%; }
+            .close-video-btn { right: 10px; top: -35px; }
         }
     </style>
 </head>
 <body>
+
+    <div class="video-modal-overlay" id="tutorialModal">
+        <div class="video-container">
+            <button class="close-video-btn" onclick="closeTutorial()">✕ Close</button>
+            <iframe 
+                id="tutorialIframe" 
+                src="" 
+                title="YouTube video player" 
+                frameborder="0"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div class="video-fallback">
+            Video not loading? <a href="https://www.youtube.com/watch?v=SZMXHRK_D6s" target="_blank" rel="noopener noreferrer">Watch directly on YouTube</a>
+        </div>
+    </div>
 
     <div class="bg-mesh"></div>
 
@@ -144,6 +215,16 @@
                 <a href="#intro" class="btn btn-outline">Discover Features</a>
             </div>
         </section>
+
+        <section class="tutorial-section reveal">
+            <div class="tutorial-card">
+                <h3>New here? Watch how it works.</h3>
+                <p>Learn how to select transport modes, paint your tracks, and drop memory pins across the Philippines.</p>
+                <button class="play-btn" onclick="openTutorial()">▶</button>
+                <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Play Tutorial</span>
+            </div>
+        </section>
+
     </div>
 
     <section class="intro-section" id="intro">
@@ -220,27 +301,56 @@
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
         // =========================================
+        // YOUTUBE VIDEO MODAL LOGIC
+        // =========================================
+        const videoModal = document.getElementById('tutorialModal');
+        const ytIframe = document.getElementById('tutorialIframe');
+        
+        // STANDARD EMBED LINK
+        // Removed autoplay to prevent browser blocking on local files
+        const ytSrc = "https://www.youtube.com/embed/SZMXHRK_D6s?rel=0";
+
+        function openTutorial() {
+            videoModal.classList.add('active');
+            ytIframe.src = ytSrc; // Inject src to load video
+            document.body.style.overflow = 'hidden'; // Stop background scrolling
+        }
+
+        function closeTutorial() {
+            videoModal.classList.remove('active');
+            ytIframe.src = ""; // Clear src to stop video playing in background
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        // Close modal when clicking on the dark background
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                closeTutorial();
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && videoModal.classList.contains('active')) {
+                closeTutorial();
+            }
+        });
+
+        // =========================================
         // SOURCE CODE PROTECTION SCRIPT
         // =========================================
-        
-        // 1. Disable Right Click
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 2. Disable common Developer Tools shortcuts
         document.addEventListener('keydown', event => {
-            // Disable F12
             if (event.keyCode === 123) {
                 event.preventDefault();
             }
-            // Disable Ctrl+Shift+I and Ctrl+Shift+J (Inspect & Console)
             if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) {
                 event.preventDefault();
             }
-            // Disable Ctrl+U (View Source)
             if (event.ctrlKey && event.keyCode === 85) {
                 event.preventDefault();
             }
-            // Disable Ctrl+S (Save Page)
             if (event.ctrlKey && event.keyCode === 83) {
                 event.preventDefault();
             }

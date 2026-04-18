@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
+        /* =========================================
+           ROOT VARIABLES & BASE STYLES
+           ========================================= */
         :root {
             --bg: #0b0f1a;
             --panel: rgba(23, 32, 51, 0.85);
@@ -21,46 +24,47 @@
             --air: #ec4899;
         }
 
-        /* Added user-select restrictions to prevent copying text */
         body { 
             margin: 0; padding: 0; font-family: 'Plus+Jakarta+Sans', sans-serif; background: var(--bg); color: white; overflow: hidden;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
         
         #map { height: 100vh; width: 100vw; }
-
         .leaflet-control-attribution { display: none !important; }
 
-        /* Project Title Sidebar */
+        /* =========================================
+           TOP BRAND LOGO
+           ========================================= */
         .travel-brand {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
             background: var(--panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
             display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-
         .travel-brand h2 { margin: 0; font-size: 1rem; letter-spacing: 1px; font-weight: 600; }
 
-        /* Right Dashboard */
+        /* =========================================
+           DASHBOARD / MODE SELECTOR (DESKTOP)
+           ========================================= */
         .dashboard {
             position: fixed; top: 20px; right: 20px; z-index: 1000;
             background: var(--panel); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             padding: 20px; border-radius: 24px; width: 260px;
             border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
+            transition: all 0.3s ease; box-sizing: border-box;
         }
 
-        .mode-selector { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; }
+        .mode-selector { 
+            display: flex; flex-direction: column; gap: 10px; margin: 15px 0; 
+            max-height: 250px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .mode-selector::-webkit-scrollbar { display: none; }
 
         .mode-option {
             display: flex; align-items: center; gap: 12px; padding: 12px;
             border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.03);
             transition: all 0.2s ease; border: 1px solid transparent; user-select: none;
         }
-
         .mode-option:hover { background: rgba(255,255,255,0.08); }
         .mode-option.active {
             border-color: var(--active-color); background: rgba(255,255,255,0.1);
@@ -74,19 +78,15 @@
            CUSTOM POPUP / DATA ENTRY FORM
            ========================================= */
         .leaflet-popup-content-wrapper {
-            background: rgba(15, 23, 42, 0.95) !important;
-            color: white !important;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            padding: 5px;
+            background: rgba(15, 23, 42, 0.95) !important; color: white !important;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); padding: 5px;
         }
         .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; }
         .leaflet-popup-close-button { color: white !important; top: 10px !important; right: 10px !important; }
 
-        .tf-popup-form { display: flex; flex-direction: column; gap: 10px; min-width: 200px; font-family: 'Plus+Jakarta+Sans', sans-serif; }
+        .tf-popup-form { display: flex; flex-direction: column; gap: 10px; min-width: 220px; font-family: 'Plus+Jakarta+Sans', sans-serif; }
         .tf-popup-header { font-weight: 800; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
         .tf-popup-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; margin-bottom: -5px; }
         
@@ -99,12 +99,12 @@
         .tf-stat-box { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); padding: 8px; border-radius: 8px; font-size: 0.85rem; color: #c7d2fe; display: flex; justify-content: space-between;}
         
         .tf-save-btn {
-            background: var(--accent); color: white; border: none; padding: 8px;
-            border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.2s;
+            background: var(--accent); color: white; border: none; padding: 10px;
+            border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 5px; transition: 0.2s;
         }
-        .tf-save-btn:hover { filter: brightness(1.1); }
+        .tf-save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-        /* Animation Classes */
+        /* Map UI Positions & Animations */
         .leaflet-top.leaflet-left { top: 80px; left: 10px; }
         .animated-marker { transition: transform 1.5s linear !important; }
         .journey-emoji { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; transition: transform 0.5s ease; }
@@ -127,30 +127,83 @@
             transform: translateY(20px); transition: all 0.4s ease;
         }
         .reminder-overlay.active .reminder-card { transform: translateY(0); }
-
         .reminder-icon { font-size: 3rem; margin-bottom: 10px; }
         .reminder-title { color: var(--walk); font-weight: 800; font-size: 1.5rem; margin-bottom: 10px; }
         .reminder-text { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
-        
         .btn-continue {
             background: var(--accent); color: white; padding: 15px 30px;
-            border-radius: 50px; font-weight: 700; border: none; cursor: pointer;
-            width: 100%; transition: 0.3s;
+            border-radius: 50px; font-weight: 700; border: none; cursor: pointer; width: 100%; transition: 0.3s;
         }
         .btn-continue:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
 
+        /* =========================================
+           MOBILE RESPONSIVE (Tablets & Phones)
+           ========================================= */
         @media (max-width: 768px) {
             .travel-brand { top: 15px; left: 15px; padding: 8px 15px; }
             .travel-brand h2 { font-size: 0.85rem; }
-            .dashboard { top: auto; bottom: 20px; left: 15px; right: 15px; width: auto; padding: 15px; border-radius: 20px; }
+
+            /* Floating Bottom Bar */
+            .dashboard {
+                top: auto; bottom: 15px; left: 10px; right: 10px;
+                width: calc(100% - 20px); box-sizing: border-box;
+                padding: 15px; border-radius: 20px;
+            }
             .dashboard > p:first-child { display: none; } 
-            .mode-selector { flex-direction: row; overflow-x: auto; margin: 0 0 10px 0; padding-bottom: 5px; scrollbar-width: none; scroll-snap-type: x mandatory; }
-            .mode-selector::-webkit-scrollbar { display: none; }
-            .mode-option { flex: 1; min-width: fit-content; justify-content: center; padding: 10px 15px; scroll-snap-align: start; }
-            .leaflet-top.leaflet-left { top: 70px; left: 5px; }
-            .leaflet-bottom { bottom: 150px !important; } 
-            .reminder-card { padding: 30px 20px; }
+
+            /* --- THE 2x2 GRID FIX --- */
+            .mode-selector {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(2, 1fr);    
+                gap: 10px; margin: 0; width: 100%; max-height: none; overflow: visible;
+            }
+
+            .mode-option { width: auto; padding: 10px; margin: 0; justify-content: flex-start; gap: 8px; }
+            .mode-option span { font-size: 0.85rem; white-space: nowrap; }
+            
+            /* Move Map Tools out of the way */
+            .leaflet-top.leaflet-left { top: 60px; left: 5px; }
+            .leaflet-bottom { bottom: 180px !important; } 
+            
+            .reminder-card { padding: 30px 20px; width: 90%; }
+        }
+
+        /* =========================================
+           ULTRA-SMALL MOBILE (iPhone SE, Small Androids)
+           ========================================= */
+        @media (max-width: 400px) {
+            .travel-brand { top: 10px; left: 10px; padding: 6px 12px; border-radius: 30px; }
+            .travel-brand h2 { font-size: 0.75rem; letter-spacing: 0; }
+
+            .dashboard {
+                bottom: 0; left: 0; right: 0; width: 100vw;
+                border-radius: 20px 20px 0 0; /* Flat on bottom */
+                padding: 15px 10px 20px 10px;
+                border-left: none; border-right: none; border-bottom: none;
+            }
+
+            /* Shrink grid elements */
+            .mode-selector { gap: 6px; }
+            .mode-option { padding: 8px 6px; gap: 6px; }
+            .mode-option span { font-size: 0.75rem; }
+            .color-dot { width: 10px; height: 10px; }
+
+            /* Force Leaflet popups to fit tiny screens */
+            .leaflet-popup { max-width: 260px !important; left: -10px !important; }
+            .tf-popup-form { min-width: 220px; }
+            .tf-popup-input { font-size: 0.8rem; padding: 6px; }
+            .tf-save-btn { font-size: 0.85rem; padding: 8px; }
+
+            /* Move Map Tools */
+            .leaflet-top.leaflet-left { top: 50px; left: 5px; }
+            .leaflet-control-zoom { transform: scale(0.8); transform-origin: top right; }
+
+            .reminder-card { width: 95%; padding: 25px 15px; }
+            .reminder-title { font-size: 1.2rem; }
+            .reminder-text { font-size: 0.8rem; }
+            .btn-continue { padding: 10px 20px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -176,20 +229,27 @@
         <p style="font-size: 0.8rem; opacity: 0.7; margin: 0; font-weight: 600;">SELECT ACTIVITY</p>
         
         <div class="mode-selector">
-            <div class="mode-option active" onclick="setMode('walk', this, '#fbbf24')" style="--active-color: var(--walk)">
+            <div class="mode-option active" onclick="setMode('walk', this, '#fbbf24')" style="--active-color: var(--walk)" title="Draw a walking or hiking trail">
                 <div class="color-dot" style="background: var(--walk)"></div>
+                <span style="font-size: 1.2rem;">🚶</span>
                 <span>Walking Trail</span>
             </div>
-            <div class="mode-option" onclick="setMode('car', this, '#3b82f6')" style="--active-color: var(--car)">
+            
+            <div class="mode-option" onclick="setMode('car', this, '#3b82f6')" style="--active-color: var(--car)" title="Draw a driving or bus route">
                 <div class="color-dot" style="background: var(--car)"></div>
+                <span style="font-size: 1.2rem;">🚗</span>
                 <span>Road Trip</span>
             </div>
-            <div class="mode-option" onclick="setMode('sea', this, '#14b8a6')" style="--active-color: var(--sea)">
+            
+            <div class="mode-option" onclick="setMode('sea', this, '#14b8a6')" style="--active-color: var(--sea)" title="Draw a ferry or boat journey">
                 <div class="color-dot" style="background: var(--sea)"></div>
+                <span style="font-size: 1.2rem;">🚢</span>
                 <span>Sea Voyage</span>
             </div>
-            <div class="mode-option" onclick="setMode('air', this, '#ec4899')" style="--active-color: var(--air)">
+            
+            <div class="mode-option" onclick="setMode('air', this, '#ec4899')" style="--active-color: var(--air)" title="Draw a flight path between islands/cities">
                 <div class="color-dot" style="background: var(--air)"></div>
+                <span style="font-size: 1.2rem;">✈️</span>
                 <span>Flight Path</span>
             </div>
         </div>
@@ -208,46 +268,23 @@
         // =========================================
         // SOURCE CODE PROTECTION SCRIPT
         // =========================================
-        
-        // 1. Disable Right Click
         document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // 2. Disable common Developer Tools shortcuts
         document.addEventListener('keydown', event => {
-            // Disable F12
-            if (event.keyCode === 123) {
-                event.preventDefault();
-            }
-            // Disable Ctrl+Shift+I and Ctrl+Shift+J (Inspect & Console)
-            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) {
-                event.preventDefault();
-            }
-            // Disable Ctrl+U (View Source)
-            if (event.ctrlKey && event.keyCode === 85) {
-                event.preventDefault();
-            }
-            // Disable Ctrl+S (Save Page)
-            if (event.ctrlKey && event.keyCode === 83) {
-                event.preventDefault();
-            }
+            if (event.keyCode === 123) { event.preventDefault(); }
+            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) { event.preventDefault(); }
+            if (event.ctrlKey && event.keyCode === 85) { event.preventDefault(); }
+            if (event.ctrlKey && event.keyCode === 83) { event.preventDefault(); }
         });
 
         // =========================================
         // ORIGINAL MAP LOGIC
         // =========================================
-
-        // Paalala Logic: Show on load
         window.onload = () => {
-            setTimeout(() => {
-                document.getElementById('paalalaModal').classList.add('active');
-            }, 500); 
+            setTimeout(() => { document.getElementById('paalalaModal').classList.add('active'); }, 500); 
         };
 
-        function closePaalala() {
-            document.getElementById('paalalaModal').classList.remove('active');
-        }
+        function closePaalala() { document.getElementById('paalalaModal').classList.remove('active'); }
 
-        // Map Logic
         let currentMode = 'walk';
         let currentColor = '#fbbf24';
 
@@ -337,29 +374,32 @@
             const icon = type === 'Marker' ? '📍' : '🛤️';
             
             let distHtml = '';
-            if (distance) {
-                distHtml = `<div class="tf-stat-box"><span>Distance:</span> <b>${distance} km</b></div>`;
-            }
+            if (distance) distHtml = `<div class="tf-stat-box"><span>Distance:</span> <b>${distance} km</b></div>`;
 
             return `
-                <div class="tf-popup-form">
+                <div class="tf-popup-form" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
                     <div class="tf-popup-header" style="color: ${color}">
                         <span>${icon} ${title}</span>
                     </div>
                     ${distHtml}
+                    <label class="tf-popup-label">Location Name</label>
+                    <input type="text" class="tf-popup-input" placeholder="e.g. Boracay Island" id="tf-location">
+
                     <label class="tf-popup-label">Date Visited</label>
                     <input type="date" class="tf-popup-input" id="tf-date">
                     
                     <label class="tf-popup-label">1-Word Memory</label>
                     <input type="text" class="tf-popup-input" placeholder="e.g. Breathtaking" id="tf-memory">
                     
-                    <button class="tf-save-btn" onclick="saveData(this)" style="background: ${color}">Save Log</button>
+                    <button class="tf-save-btn" onclick="saveData(event, this)" style="background: ${color}">Mark Location</button>
                 </div>
             `;
         }
 
-        window.saveData = function(btn) {
+        window.saveData = function(event, btn) {
+            event.stopPropagation(); 
             const form = btn.parentElement;
+            const location = form.querySelector('#tf-location').value || 'Unknown Place';
             const date = form.querySelector('#tf-date').value || 'Unknown Date';
             const memory = form.querySelector('#tf-memory').value || 'Unforgettable';
             const header = form.querySelector('.tf-popup-header').innerHTML;
@@ -368,7 +408,9 @@
             form.innerHTML = `
                 <div class="tf-popup-header">${header}</div>
                 ${stat}
-                <div style="margin-top: 10px; font-size: 0.9rem;">
+                <div style="margin-top: 10px; font-size: 0.85rem;">
+                    <p style="margin:0; color:#94a3b8;">Location:</p>
+                    <p style="margin:0 0 10px 0; font-weight: 800; font-size: 1rem; color: white;">${location}</p>
                     <p style="margin:0; color:#94a3b8;">Visited on:</p>
                     <p style="margin:0 0 10px 0; font-weight: 600;">${date}</p>
                     <p style="margin:0; color:#94a3b8;">Vibe:</p>
@@ -380,6 +422,8 @@
         map.on('pm:create', (e) => {
             const layer = e.layer;
             const type = e.shape;
+
+            map.pm.disableDraw();
 
             if (type === 'Marker') {
                 const markerHtml = `<div style="background:${currentColor}; width:15px; height:15px; border-radius:50%; box-shadow: 0 0 10px ${currentColor}; border: 2px solid white;"></div>`;
