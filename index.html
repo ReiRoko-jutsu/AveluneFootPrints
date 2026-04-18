@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Avelune Footprints | Trace Your Legacy</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --panel: rgba(23, 32, 51, 0.6);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --secondary: #fbbf24;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        /* Anti-copy/inspect protections */
+        body { 
+            margin: 0; padding: 0; font-family: 'Plus+Jakarta+Sans', sans-serif; 
+            background: var(--bg); color: var(--text-main); overflow-x: hidden;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        }
+
+        /* Animated Background Mesh */
+        .bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(251, 191, 36, 0.08) 0%, transparent 50%);
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* --- NAVIGATION --- */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 30px 0; }
+        .logo { font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
+        
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 14px 32px; border-radius: 50px; font-weight: 700; text-decoration: none;
+            transition: var(--transition); border: none; cursor: pointer; font-size: 1rem;
+        }
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 10px 25px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 35px var(--accent-glow); filter: brightness(1.1); }
+        .btn-outline { background: transparent; color: white; border: 1px solid var(--glass-border); }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: white; }
+
+        /* --- HERO SECTION --- */
+        .hero { min-height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .hero-badge {
+            background: rgba(251, 191, 36, 0.1); color: var(--secondary); padding: 8px 20px;
+            border-radius: 50px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 30px; border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 24px;
+            background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -2px;
+        }
+        .hero p { font-size: 1.25rem; color: var(--text-dim); max-width: 600px; margin-bottom: 40px; line-height: 1.6; }
+        
+        .hero-buttons { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+        /* --- INTRODUCTION SECTION --- */
+        .intro-section { padding: 120px 0; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); }
+        .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .intro-text h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 24px; color: white; }
+        .intro-text p { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.7; }
+        
+        .intro-visual {
+            position: relative; border-radius: 24px; overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid var(--glass-border);
+        }
+        .intro-visual img { width: 100%; display: block; filter: brightness(0.8); transition: 0.5s; }
+        .intro-visual:hover img { filter: brightness(1); transform: scale(1.02); }
+
+        /* --- 4 FEATURES SECTION --- */
+        .features-section { padding: 120px 0; }
+        .section-header { text-align: center; max-width: 700px; margin: 0 auto 60px auto; }
+        .section-header h2 { font-size: 3rem; font-weight: 800; margin-bottom: 20px; }
+        .section-header p { font-size: 1.1rem; color: var(--text-dim); }
+
+        .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
+        
+        .feature-card {
+            background: var(--panel); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 40px; border-radius: 24px; border: 1px solid var(--glass-border);
+            transition: var(--transition); display: flex; flex-direction: column; gap: 20px;
+        }
+        .feature-card:hover { transform: translateY(-10px); border-color: var(--accent); background: rgba(30, 41, 59, 0.8); }
+        
+        .feature-icon {
+            width: 60px; height: 60px; border-radius: 16px; background: rgba(99, 102, 241, 0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        .feature-card h3 { font-size: 1.5rem; font-weight: 700; margin: 0; color: white; }
+        .feature-card p { font-size: 1rem; color: var(--text-dim); margin: 0; line-height: 1.6; }
+
+        /* --- FOOTER --- */
+        footer { padding: 60px 0; text-align: center; border-top: 1px solid var(--glass-border); background: #070a12; }
+        footer p { color: var(--text-dim); font-size: 0.9rem; }
+
+        /* --- ANIMATION CLASSES --- */
+        .reveal { opacity: 0; transform: translateY(40px); transition: var(--transition); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .intro-grid { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 3.5rem; }
+            .hero-buttons { flex-direction: column; width: 100%; padding: 0 20px; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-mesh"></div>
+
+    <div class="container">
+        <nav class="reveal">
+            <div class="logo">👣 Avelune Footprints</div>
+            <a href="Map.html" class="btn btn-outline" style="padding: 10px 24px; font-size: 0.9rem;">Open Map</a>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-badge reveal">Philippines Explorer Edition</div>
+            <h1 class="reveal delay-1">Map your legacy.<br>Not just your route.</h1>
+            <p class="reveal delay-2">
+                Traditional maps show you where to go. Travel Footprints is a high-fidelity digital journal that shows you where you've been. Trace your journey across the archipelago.
+            </p>
+            <div class="hero-buttons reveal delay-2">
+                <a href="Map.html" class="btn btn-primary">Explore the Map</a>
+                <a href="#intro" class="btn btn-outline">Discover Features</a>
+            </div>
+        </section>
+    </div>
+
+    <section class="intro-section" id="intro">
+        <div class="container intro-grid">
+            <div class="intro-visual reveal">
+                <img 
+                    src="images/travelfootprints.png" 
+                    alt="Travel Mapping"
+                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518173946687-a4c8a9ba336f?auto=format&fit=crop&w=800&q=80';"
+                >
+            </div>
+            <div class="intro-text reveal delay-1">
+                <div style="color: var(--secondary); font-weight: 700; margin-bottom: 10px; letter-spacing: 1px;">THE MEMORY GAP</div>
+                <h2>Bridging physical movement and digital memory.</h2>
+                <p>When you travel, taking photos is only half the story. The real adventure is the transit—the long ferry ride to Siargao, the winding drive up to Baguio, or the hiking trail in Mt. Pulag.</p>
+                <p>Travel Footprints provides the canvas for you to manually "paint" your history. Save the context, the dates, and the exact vibe of every location you visit.</p>
+                <a href="Map.html" class="btn btn-outline" style="margin-top: 20px;">Start Tracking Now</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section container">
+        <div class="section-header reveal">
+            <h2>Everything you need to document your journey.</h2>
+            <p>A specialized toolkit designed to turn raw GPS coordinates into a beautiful, personal travel dashboard.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.3);">🛣️</div>
+                <h3>Dynamic Pathing</h3>
+                <p>Select your transport mode (Walk, Car, Sea, Air). The system automatically color-codes and styles your track to reflect how you conquered the distance.</p>
+            </div>
+
+            <div class="feature-card reveal delay-1">
+                <div class="feature-icon" style="color: #ec4899; background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.3);">📍</div>
+                <h3>Contextual Memory Pins</h3>
+                <p>Drop interactive markers on the map. Log the date you visited and save a 1-word memory that captures the exact "soul" of that specific location.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);">▶️</div>
+                <h3>Live Journey Animation</h3>
+                <p>Watch your travels come to life. The map features an automatic playback animation that traces your route with a moving icon the moment you save a track.</p>
+            </div>
+
+            <div class="feature-card reveal delay-1">
+                <div class="feature-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">🛡️</div>
+                <h3>Personal Sandbox</h3>
+                <p>Enjoy a stress-free mapping experience. No complex databases—just an open, private canvas for you to experiment and visualize your footprint safely.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="logo" style="justify-content: center; margin-bottom: 20px; font-size: 1.2rem; color: white;">👣 Avelune Footprints</div>
+            <p>&copy; 2026 Avelune Footprints. Trace the untamed Philippines.</p>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================
+        // SCROLL REVEAL ANIMATIONS
+        // =========================================
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // =========================================
+        // SOURCE CODE PROTECTION SCRIPT
+        // =========================================
+        
+        // 1. Disable Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Disable common Developer Tools shortcuts
+        document.addEventListener('keydown', event => {
+            // Disable F12
+            if (event.keyCode === 123) {
+                event.preventDefault();
+            }
+            // Disable Ctrl+Shift+I and Ctrl+Shift+J (Inspect & Console)
+            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) {
+                event.preventDefault();
+            }
+            // Disable Ctrl+U (View Source)
+            if (event.ctrlKey && event.keyCode === 85) {
+                event.preventDefault();
+            }
+            // Disable Ctrl+S (Save Page)
+            if (event.ctrlKey && event.keyCode === 83) {
+                event.preventDefault();
+            }
+        });
+    </script>
+
+</body>
+</html>

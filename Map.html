@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Avelune Footprints | Personal Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --panel: rgba(23, 32, 51, 0.85);
+            --accent: #6366f1;
+            /* Mode Colors */
+            --walk: #fbbf24;
+            --car: #3b82f6;
+            --sea: #14b8a6;
+            --air: #ec4899;
+        }
+
+        /* Added user-select restrictions to prevent copying text */
+        body { 
+            margin: 0; padding: 0; font-family: 'Plus+Jakarta+Sans', sans-serif; background: var(--bg); color: white; overflow: hidden;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        #map { height: 100vh; width: 100vw; }
+
+        .leaflet-control-attribution { display: none !important; }
+
+        /* Project Title Sidebar */
+        .travel-brand {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: var(--panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .travel-brand h2 { margin: 0; font-size: 1rem; letter-spacing: 1px; font-weight: 600; }
+
+        /* Right Dashboard */
+        .dashboard {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: var(--panel); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            padding: 20px; border-radius: 24px; width: 260px;
+            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .mode-selector { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; }
+
+        .mode-option {
+            display: flex; align-items: center; gap: 12px; padding: 12px;
+            border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.03);
+            transition: all 0.2s ease; border: 1px solid transparent; user-select: none;
+        }
+
+        .mode-option:hover { background: rgba(255,255,255,0.08); }
+        .mode-option.active {
+            border-color: var(--active-color); background: rgba(255,255,255,0.1);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+        }
+
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .mode-option span { font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+
+        /* =========================================
+           CUSTOM POPUP / DATA ENTRY FORM
+           ========================================= */
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.95) !important;
+            color: white !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 5px;
+        }
+        .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; }
+        .leaflet-popup-close-button { color: white !important; top: 10px !important; right: 10px !important; }
+
+        .tf-popup-form { display: flex; flex-direction: column; gap: 10px; min-width: 200px; font-family: 'Plus+Jakarta+Sans', sans-serif; }
+        .tf-popup-header { font-weight: 800; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
+        .tf-popup-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; margin-bottom: -5px; }
+        
+        .tf-popup-input {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 8px 10px; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none;
+        }
+        .tf-popup-input:focus { border-color: var(--accent); }
+        
+        .tf-stat-box { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); padding: 8px; border-radius: 8px; font-size: 0.85rem; color: #c7d2fe; display: flex; justify-content: space-between;}
+        
+        .tf-save-btn {
+            background: var(--accent); color: white; border: none; padding: 8px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.2s;
+        }
+        .tf-save-btn:hover { filter: brightness(1.1); }
+
+        /* Animation Classes */
+        .leaflet-top.leaflet-left { top: 80px; left: 10px; }
+        .animated-marker { transition: transform 1.5s linear !important; }
+        .journey-emoji { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; transition: transform 0.5s ease; }
+
+        /* =========================================
+           PAALALA POPUP (REMINDER MODAL)
+           ========================================= */
+        .reminder-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        .reminder-overlay.active { opacity: 1; visibility: visible; }
+        
+        .reminder-card {
+            background: #1e293b; padding: 40px; border-radius: 24px;
+            width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            transform: translateY(20px); transition: all 0.4s ease;
+        }
+        .reminder-overlay.active .reminder-card { transform: translateY(0); }
+
+        .reminder-icon { font-size: 3rem; margin-bottom: 10px; }
+        .reminder-title { color: var(--walk); font-weight: 800; font-size: 1.5rem; margin-bottom: 10px; }
+        .reminder-text { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        
+        .btn-continue {
+            background: var(--accent); color: white; padding: 15px 30px;
+            border-radius: 50px; font-weight: 700; border: none; cursor: pointer;
+            width: 100%; transition: 0.3s;
+        }
+        .btn-continue:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+
+        @media (max-width: 768px) {
+            .travel-brand { top: 15px; left: 15px; padding: 8px 15px; }
+            .travel-brand h2 { font-size: 0.85rem; }
+            .dashboard { top: auto; bottom: 20px; left: 15px; right: 15px; width: auto; padding: 15px; border-radius: 20px; }
+            .dashboard > p:first-child { display: none; } 
+            .mode-selector { flex-direction: row; overflow-x: auto; margin: 0 0 10px 0; padding-bottom: 5px; scrollbar-width: none; scroll-snap-type: x mandatory; }
+            .mode-selector::-webkit-scrollbar { display: none; }
+            .mode-option { flex: 1; min-width: fit-content; justify-content: center; padding: 10px 15px; scroll-snap-align: start; }
+            .leaflet-top.leaflet-left { top: 70px; left: 5px; }
+            .leaflet-bottom { bottom: 150px !important; } 
+            .reminder-card { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="reminder-overlay" id="paalalaModal">
+        <div class="reminder-card">
+            <div class="reminder-icon">👋</div>
+            <h2 class="reminder-title">Paalala!</h2>
+            <p class="reminder-text">
+                Nothing is saved here permanently. This app is designed for you to just have fun, map your journey, and visualize your footprint across the beautiful Philippines! Enjoy exploring! 🇵🇭
+            </p>
+            <button class="btn-continue" onclick="closePaalala()">I Understand, Let's Go!</button>
+        </div>
+    </div>
+
+    <div class="travel-brand">
+        <span>👣</span>
+        <h2>Avelune FOOTPRINTS</h2>
+    </div>
+
+    <div class="dashboard">
+        <p style="font-size: 0.8rem; opacity: 0.7; margin: 0; font-weight: 600;">SELECT ACTIVITY</p>
+        
+        <div class="mode-selector">
+            <div class="mode-option active" onclick="setMode('walk', this, '#fbbf24')" style="--active-color: var(--walk)">
+                <div class="color-dot" style="background: var(--walk)"></div>
+                <span>Walking Trail</span>
+            </div>
+            <div class="mode-option" onclick="setMode('car', this, '#3b82f6')" style="--active-color: var(--car)">
+                <div class="color-dot" style="background: var(--car)"></div>
+                <span>Road Trip</span>
+            </div>
+            <div class="mode-option" onclick="setMode('sea', this, '#14b8a6')" style="--active-color: var(--sea)">
+                <div class="color-dot" style="background: var(--sea)"></div>
+                <span>Sea Voyage</span>
+            </div>
+            <div class="mode-option" onclick="setMode('air', this, '#ec4899')" style="--active-color: var(--air)">
+                <div class="color-dot" style="background: var(--air)"></div>
+                <span>Flight Path</span>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+            <p id="status-msg" style="font-size: 0.75rem; color: var(--walk); margin: 0; font-weight: 600;">Now marking: Walking Trail</p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.js"></script>
+
+    <script>
+        // =========================================
+        // SOURCE CODE PROTECTION SCRIPT
+        // =========================================
+        
+        // 1. Disable Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Disable common Developer Tools shortcuts
+        document.addEventListener('keydown', event => {
+            // Disable F12
+            if (event.keyCode === 123) {
+                event.preventDefault();
+            }
+            // Disable Ctrl+Shift+I and Ctrl+Shift+J (Inspect & Console)
+            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) {
+                event.preventDefault();
+            }
+            // Disable Ctrl+U (View Source)
+            if (event.ctrlKey && event.keyCode === 85) {
+                event.preventDefault();
+            }
+            // Disable Ctrl+S (Save Page)
+            if (event.ctrlKey && event.keyCode === 83) {
+                event.preventDefault();
+            }
+        });
+
+        // =========================================
+        // ORIGINAL MAP LOGIC
+        // =========================================
+
+        // Paalala Logic: Show on load
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('paalalaModal').classList.add('active');
+            }, 500); 
+        };
+
+        function closePaalala() {
+            document.getElementById('paalalaModal').classList.remove('active');
+        }
+
+        // Map Logic
+        let currentMode = 'walk';
+        let currentColor = '#fbbf24';
+
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([12.8797, 121.7740], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        const getModeStyle = (mode, color) => {
+            const base = { color: color, weight: 4, opacity: 0.8 };
+            if (mode === 'walk') return { ...base, dashArray: '1, 10', weight: 6 }; 
+            if (mode === 'sea') return { ...base, dashArray: '10, 10' };
+            if (mode === 'air') return { ...base, weight: 2, opacity: 0.5 };
+            return base; 
+        };
+
+        map.pm.addControls({ position: 'topleft', drawCircle: false, drawRectangle: false, drawCircleMarker: false, drawText: false, cutPolygon: false });
+
+        function setMode(mode, el, color) {
+            currentMode = mode; currentColor = color;
+            document.querySelectorAll('.mode-option').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+            
+            const status = document.getElementById('status-msg');
+            status.innerText = `Now marking: ${el.querySelector('span').innerText}`;
+            status.style.color = color;
+
+            map.pm.setGlobalOptions({ pathOptions: getModeStyle(mode, color), templineStyle: getModeStyle(mode, color) });
+        }
+
+        setMode('walk', document.querySelector('.mode-option'), '#fbbf24');
+
+        function getBearing(start, end) {
+            const lat1 = start.lat * Math.PI / 180, lng1 = start.lng * Math.PI / 180;
+            const lat2 = end.lat * Math.PI / 180, lng2 = end.lng * Math.PI / 180;
+            const y = Math.sin(lng2 - lng1) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
+            return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        }
+
+        function calculateDistance(latlngs) {
+            let totalDistance = 0;
+            for (let i = 0; i < latlngs.length - 1; i++) {
+                totalDistance += latlngs[i].distanceTo(latlngs[i+1]);
+            }
+            return (totalDistance / 1000).toFixed(1); 
+        }
+
+        function animateJourney(latlngs, mode, color) {
+            if (!latlngs || latlngs.length < 2) return;
+
+            let emoji = '🚶';
+            if (mode === 'car') emoji = '🚗';
+            if (mode === 'sea') emoji = '🚢';
+            if (mode === 'air') emoji = '✈️';
+
+            const icon = L.divIcon({
+                html: `<div class="journey-emoji" style="font-size: 28px; filter: drop-shadow(0 0 15px ${color});">${emoji}</div>`,
+                className: '', iconSize: [30, 30], iconAnchor: [15, 15]
+            });
+
+            const marker = L.marker(latlngs[0], {icon: icon, zIndexOffset: 1000}).addTo(map);
+            
+            setTimeout(() => {
+                if(marker.getElement()) marker.getElement().classList.add('animated-marker');
+                let i = 1;
+                function moveToNextPoint() {
+                    if (i < latlngs.length) {
+                        let angle = getBearing(latlngs[i-1], latlngs[i]);
+                        if (mode === 'air') angle -= 45; if (mode === 'sea') angle -= 90; if (mode === 'car') angle -= 90;
+
+                        const emojiDiv = marker.getElement().querySelector('.journey-emoji');
+                        if(emojiDiv && mode !== 'walk') emojiDiv.style.transform = `rotate(${angle}deg)`;
+
+                        marker.setLatLng(latlngs[i]); i++;
+                        setTimeout(moveToNextPoint, 1500);
+                    } else {
+                        marker.getElement().style.opacity = '0';
+                        setTimeout(() => map.removeLayer(marker), 1500);
+                    }
+                }
+                moveToNextPoint();
+            }, 100);
+        }
+
+        function getPopupForm(type, mode, color, distance = null) {
+            const title = type === 'Marker' ? 'Location Pin' : `${mode.toUpperCase()} Track`;
+            const icon = type === 'Marker' ? '📍' : '🛤️';
+            
+            let distHtml = '';
+            if (distance) {
+                distHtml = `<div class="tf-stat-box"><span>Distance:</span> <b>${distance} km</b></div>`;
+            }
+
+            return `
+                <div class="tf-popup-form">
+                    <div class="tf-popup-header" style="color: ${color}">
+                        <span>${icon} ${title}</span>
+                    </div>
+                    ${distHtml}
+                    <label class="tf-popup-label">Date Visited</label>
+                    <input type="date" class="tf-popup-input" id="tf-date">
+                    
+                    <label class="tf-popup-label">1-Word Memory</label>
+                    <input type="text" class="tf-popup-input" placeholder="e.g. Breathtaking" id="tf-memory">
+                    
+                    <button class="tf-save-btn" onclick="saveData(this)" style="background: ${color}">Save Log</button>
+                </div>
+            `;
+        }
+
+        window.saveData = function(btn) {
+            const form = btn.parentElement;
+            const date = form.querySelector('#tf-date').value || 'Unknown Date';
+            const memory = form.querySelector('#tf-memory').value || 'Unforgettable';
+            const header = form.querySelector('.tf-popup-header').innerHTML;
+            const stat = form.querySelector('.tf-stat-box') ? form.querySelector('.tf-stat-box').outerHTML : '';
+
+            form.innerHTML = `
+                <div class="tf-popup-header">${header}</div>
+                ${stat}
+                <div style="margin-top: 10px; font-size: 0.9rem;">
+                    <p style="margin:0; color:#94a3b8;">Visited on:</p>
+                    <p style="margin:0 0 10px 0; font-weight: 600;">${date}</p>
+                    <p style="margin:0; color:#94a3b8;">Vibe:</p>
+                    <p style="margin:0; font-weight: 600; color: var(--accent);">"${memory}"</p>
+                </div>
+            `;
+        };
+
+        map.on('pm:create', (e) => {
+            const layer = e.layer;
+            const type = e.shape;
+
+            if (type === 'Marker') {
+                const markerHtml = `<div style="background:${currentColor}; width:15px; height:15px; border-radius:50%; box-shadow: 0 0 10px ${currentColor}; border: 2px solid white;"></div>`;
+                layer.setIcon(L.divIcon({ html: markerHtml, className: '' }));
+                layer.bindPopup(getPopupForm(type, currentMode, currentColor)).openPopup();
+            } else {
+                let latlngs = layer.getLatLngs();
+                if (latlngs[0] instanceof Array) latlngs = latlngs[0]; 
+                
+                const dist = calculateDistance(latlngs);
+                layer.bindPopup(getPopupForm(type, currentMode, currentColor, dist)).openPopup();
+                
+                animateJourney(latlngs, currentMode, currentColor);
+            }
+        });
+    </script>
+</body>
+</html>
